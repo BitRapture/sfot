@@ -14,10 +14,7 @@ int main()
 	u8* mem = new u8[65536]{
 		op LDA_IMM,
 		0xff,
-		op PHA,
-		op ROL_ABS,
-		0xff,
-		0x01
+		op ROR_A
 	};
 	sfotmem memory(mem, cmem M64K);
 
