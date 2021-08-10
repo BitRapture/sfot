@@ -111,6 +111,7 @@ private: // Opcodes/Instructions
 	void O_ASL(u16& _addr, sfotmem& _mem); void O_ASL_A(u16& _addr, sfotmem& _mem);
 	void O_LSR(u16& _addr, sfotmem& _mem); void O_LSR_A(u16& _addr, sfotmem& _mem);
 	void O_ROL(u16& _addr, sfotmem& _mem); void O_ROL_A(u16& _addr, sfotmem& _mem);
+	void O_ROR(u16& _addr, sfotmem& _mem); void O_ROR_A(u16& _addr, sfotmem& _mem);
 
 	// Jumps & calls
 	// Branches

@@ -334,8 +334,41 @@ void sfot::O_ROL(u16& _addr, sfotmem& _mem)
 	// Set carry
 	r_SR = (operand & 0x80) >> 7; operand <<= 1;
 	operand |= oldCarry;
+	_mem.Set(_addr, operand);
 	// Set appropriate status flags
 	r_SR |= ((!operand) << (u8)r_SRSs::Z) | (operand & (u8)r_SRS::N) | (u8)r_SRS::S;
+}
+void sfot::O_ROL_A(u16& _addr, sfotmem& _mem)
+{
+	// Rotate left (accumulator)
+	u8 oldCarry = r_SR & (u8)r_SRS::C;
+	// Set carry
+	r_SR = (r_A & 0x80) >> 7; r_A <<= 1;
+	r_A |= oldCarry;
+	// Set appropriate status flags
+	r_SR |= ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
+}
+void sfot::O_ROR(u16& _addr, sfotmem& _mem)
+{
+	// Rotate right (memory)
+	u8 operand = _mem[_addr];
+	u8 oldCarry = r_SR & (u8)r_SRS::C;
+	// Set carry
+	r_SR = (operand & 0x01); operand >>= 1;
+	operand |= oldCarry;
+	_mem.Set(_addr, operand);
+	// Set appropriate status flags
+	r_SR |= ((!operand) << (u8)r_SRSs::Z) | (operand & (u8)r_SRS::N) | (u8)r_SRS::S;
+}
+void sfot::O_ROR_A(u16& _addr, sfotmem& _mem)
+{
+	// Rotate right (accumulator)
+	u8 oldCarry = r_SR & (u8)r_SRS::C;
+	// Set carry
+	r_SR = (r_A & 0x01); r_A >>= 1;
+	r_A |= oldCarry;
+	// Set appropriate status flags
+	r_SR |= ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
 }
 
 u64 sfot::EmulateCycles(sfotmem& _memory, u64& _cycleAmount)
@@ -781,6 +814,38 @@ sfot::sfot()
 						
 	e_OCJT[(u8)sfotops::LSR_ABSX] = &sfot::O_LSR;
 	e_OCAM[(u8)sfotops::LSR_ABSX] = (u8)r_AM::ABSX;
+
+	// Rotate left
+	e_OCJT[(u8)sfotops::ROL_A] = &sfot::O_ROL_A;
+	e_OCAM[(u8)sfotops::ROL_A] = (u8)r_AM::NOADDR;
+						
+	e_OCJT[(u8)sfotops::ROL_ZPG] = &sfot::O_ROL;
+	e_OCAM[(u8)sfotops::ROL_ZPG] = (u8)r_AM::ZPG;
+						
+	e_OCJT[(u8)sfotops::ROL_ZPGX] = &sfot::O_ROL;
+	e_OCAM[(u8)sfotops::ROL_ZPGX] = (u8)r_AM::ZPGX;
+						
+	e_OCJT[(u8)sfotops::ROL_ABS] = &sfot::O_ROL;
+	e_OCAM[(u8)sfotops::ROL_ABS] = (u8)r_AM::ABS;
+						
+	e_OCJT[(u8)sfotops::ROL_ABSX] = &sfot::O_ROL;
+	e_OCAM[(u8)sfotops::ROL_ABSX] = (u8)r_AM::ABSX;
+
+	// Rotate right
+	e_OCJT[(u8)sfotops::ROR_A] = &sfot::O_ROR_A;
+	e_OCAM[(u8)sfotops::ROR_A] = (u8)r_AM::NOADDR;
+						
+	e_OCJT[(u8)sfotops::ROR_ZPG] = &sfot::O_ROR;
+	e_OCAM[(u8)sfotops::ROR_ZPG] = (u8)r_AM::ZPG;
+						
+	e_OCJT[(u8)sfotops::ROR_ZPGX] = &sfot::O_ROR;
+	e_OCAM[(u8)sfotops::ROR_ZPGX] = (u8)r_AM::ZPGX;
+						
+	e_OCJT[(u8)sfotops::ROR_ABS] = &sfot::O_ROR;
+	e_OCAM[(u8)sfotops::ROR_ABS] = (u8)r_AM::ABS;
+						
+	e_OCJT[(u8)sfotops::ROR_ABSX] = &sfot::O_ROR;
+	e_OCAM[(u8)sfotops::ROR_ABSX] = (u8)r_AM::ABSX;
 
 		// Jumps & calls
 
