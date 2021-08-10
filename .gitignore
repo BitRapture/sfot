@@ -1,0 +1,11 @@
+.vs
+Debug
+Release
+x64
+sfot/Debug
+sfot/Release
+sfot/x64
+sfot.sln
+sfot/sfot.vcxproj
+sfot/sfot.vcxproj.filters
+sfot/sfot.vcxproj.user
