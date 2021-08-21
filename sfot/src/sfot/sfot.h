@@ -114,6 +114,10 @@ private: // Opcodes/Instructions
 	void O_ROR(u16& _addr, sfotmem& _mem); void O_ROR_A(u16& _addr, sfotmem& _mem);
 
 	// Jumps & calls
+	void O_JMP(u16& _addr, sfotmem& _mem);
+	void O_JSR(u16& _addr, sfotmem& _mem);
+	void O_RTS(u16& _addr, sfotmem& _mem);
+
 	// Branches
 	// Status flag changes
 	// System functions

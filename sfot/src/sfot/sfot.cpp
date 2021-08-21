@@ -370,6 +370,31 @@ void sfot::O_ROR_A(u16& _addr, sfotmem& _mem)
 	// Set appropriate status flags
 	r_SR |= ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
 }
+void sfot::O_JMP(u16& _addr, sfotmem& _mem)
+{
+	// Move program counter to specific address
+	r_PC = _addr;
+}
+void sfot::O_JSR(u16& _addr, sfotmem& _mem)
+{
+	// Jump to subroutine
+	--r_PC;
+	u16 addr = 0x0100 | r_S; --r_S;
+	_mem.Set(addr, (r_PC >> 8) & 0xFF);
+	addr = 0x0100 | r_S; --r_S;
+	_mem.Set(addr, r_PC & 0xFF);
+	r_PC = _addr;
+}
+void sfot::O_RTS(u16& _addr, sfotmem& _mem)
+{
+	// Return from subroutine, get from stack
+	u16 addr = 0x0100 | ++r_S;
+	_addr = _mem[addr]; // little bit cheeky :)
+	addr = 0x0100 | ++r_S;
+	_addr |= (_mem[addr]) << 8;
+	r_PC = _addr + 1;
+
+}
 
 u64 sfot::EmulateCycles(sfotmem& _memory, u64& _cycleAmount)
 {
@@ -848,6 +873,20 @@ sfot::sfot()
 	e_OCAM[(u8)sfotops::ROR_ABSX] = (u8)r_AM::ABSX;
 
 		// Jumps & calls
+	// Move program counter to specific address
+	e_OCJT[(u8)sfotops::JMP_ABS] = &sfot::O_JMP;
+	e_OCAM[(u8)sfotops::JMP_ABS] = (u8)r_AM::ABS;
+						
+	e_OCJT[(u8)sfotops::JMP_IND] = &sfot::O_JMP;
+	e_OCAM[(u8)sfotops::JMP_IND] = (u8)r_AM::IND;
+
+	// Jump to subroutine
+	e_OCJT[(u8)sfotops::JSR_ABS] = &sfot::O_JSR;
+	e_OCAM[(u8)sfotops::JSR_ABS] = (u8)r_AM::ABS;
+
+	// Return from subroutine
+	e_OCJT[(u8)sfotops::RTS] = &sfot::O_RTS;
+	e_OCAM[(u8)sfotops::RTS] = (u8)r_AM::NOADDR;
 
 		// Branches
 
