@@ -51,6 +51,7 @@ int main()
 		<< "\ninterrupt: " << (u32)((*statusRegister & 4) >> 2)
 		<< "\ndecimal: " << (u32)((*statusRegister & 8) >> 3)
 		<< "\nbreak: " << (u32)((*statusRegister & 16) >> 4)
+		<< "\nconstant: " << (u32)((*statusRegister & 32) >> 5)
 		<< "\noverflow: " << (u32)((*statusRegister & 64) >> 6)
 		<< "\nnegative: " << (u32)((*statusRegister & 128) >> 7)
 		<< std::endl;

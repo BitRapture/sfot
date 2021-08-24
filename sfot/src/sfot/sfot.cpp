@@ -435,7 +435,41 @@ void sfot::O_BVS(u16& _addr, sfotmem& _mem)
 	// Branch if overflow set
 	r_PC = (!(r_SR & (u8)r_SRS::O) ? r_PC : _addr);
 }
-
+void sfot::O_CLC(u16& _addr, sfotmem& _mem)
+{
+	// Clear carry
+	r_SR &= ~(u8)r_SRS::C;
+}
+void sfot::O_CLD(u16& _addr, sfotmem& _mem)
+{
+	// Clear decimal mode
+	r_SR &= ~(u8)r_SRS::D;
+}
+void sfot::O_CLI(u16& _addr, sfotmem& _mem)
+{
+	// Clear interrupt disable
+	r_SR &= ~(u8)r_SRS::I;
+}
+void sfot::O_CLV(u16& _addr, sfotmem& _mem)
+{
+	// Clear overflow
+	r_SR &= ~(u8)r_SRS::O;
+}
+void sfot::O_SEC(u16& _addr, sfotmem& _mem)
+{
+	// Set carry
+	r_SR |= (u8)r_SRS::C;
+}
+void sfot::O_SED(u16& _addr, sfotmem& _mem)
+{
+	// Set decimal mode
+	r_SR |= (u8)r_SRS::D;
+}
+void sfot::O_SEI(u16& _addr, sfotmem& _mem)
+{
+	// Set interrupt disable
+	r_SR |= (u8)r_SRS::I;
+}
 
 u64 sfot::EmulateCycles(sfotmem& _memory, u64& _cycleAmount)
 {
@@ -963,6 +997,34 @@ sfot::sfot()
 	e_OCAM[(u8)sfotops::BVS] = (u8)r_AM::REL;
 
 		// Status flag changes
+	// Clear carry 
+	e_OCJT[(u8)sfotops::CLC] = &sfot::O_CLC;
+	e_OCAM[(u8)sfotops::CLC] = (u8)r_AM::NOADDR;
+
+	// Clear decimal mode
+	e_OCJT[(u8)sfotops::CLD] = &sfot::O_CLD;
+	e_OCAM[(u8)sfotops::CLD] = (u8)r_AM::NOADDR;
+
+	// Clear interrupt disable
+	e_OCJT[(u8)sfotops::CLI] = &sfot::O_CLI;
+	e_OCAM[(u8)sfotops::CLI] = (u8)r_AM::NOADDR;
+
+	// Clear overflow
+	e_OCJT[(u8)sfotops::CLV] = &sfot::O_CLV;
+	e_OCAM[(u8)sfotops::CLV] = (u8)r_AM::NOADDR;
+
+	// Set carry
+	e_OCJT[(u8)sfotops::SEC] = &sfot::O_SEC;
+	e_OCAM[(u8)sfotops::SEC] = (u8)r_AM::NOADDR;
+
+	// Set decimal mode
+	e_OCJT[(u8)sfotops::SED] = &sfot::O_SED;
+	e_OCAM[(u8)sfotops::SED] = (u8)r_AM::NOADDR;
+
+	// Set interrupt disable
+	e_OCJT[(u8)sfotops::SEI] = &sfot::O_SEI;
+	e_OCAM[(u8)sfotops::SEI] = (u8)r_AM::NOADDR;
+
 
 		// System functions
 	// No Operation

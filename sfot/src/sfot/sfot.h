@@ -129,6 +129,14 @@ private: // Opcodes/Instructions
 	void O_BVS(u16& _addr, sfotmem& _mem);
 
 	// Status flag changes
+	void O_CLC(u16& _addr, sfotmem& _mem);
+	void O_CLD(u16& _addr, sfotmem& _mem);
+	void O_CLI(u16& _addr, sfotmem& _mem);
+	void O_CLV(u16& _addr, sfotmem& _mem);
+	void O_SEC(u16& _addr, sfotmem& _mem);
+	void O_SED(u16& _addr, sfotmem& _mem);
+	void O_SEI(u16& _addr, sfotmem& _mem);
+	
 	// System functions
 
 public: // Getters/Setters
