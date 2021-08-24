@@ -2,6 +2,14 @@
 
 #include <iostream>
 
+// Macro: set specific bit 
+#define BIT_SET(_u, _n, _r) _u = (_u & ~(1 << _n)) | ((_r) << _n)
+/*
+	to-do:
+		Add specifc status flag macros
+			e.g: NEGATIVE_SET, ZERO_SET
+*/
+
 u16 sfot::AM_Abs(sfotmem& _mem)
 {
 	// Get address (little-endian) from next two bytes
@@ -73,21 +81,24 @@ void sfot::O_LDA(u16& _addr, sfotmem& _mem)
 	// Load accumulator
 	r_A = _mem[_addr];
 	// Set appropriate status flags
-	r_SR = ((!r_A) << (u8)r_SRSs::Z) | ((r_A >> 7) << (u8)r_SRSs::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_A);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_LDX(u16& _addr, sfotmem& _mem)
 {
 	// Load X register
 	r_X = _mem[_addr];
 	// Set appropriate status flags
-	r_SR = ((!r_X) << (u8)r_SRSs::Z) | ((r_X >> 7) << (u8)r_SRSs::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_X);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_X >> (u8)r_SRSs::N);
 }
 void sfot::O_LDY(u16& _addr, sfotmem& _mem)
 {
 	// Load Y register
 	r_Y = _mem[_addr];
 	// Set appropriate status flags
-	r_SR = ((!r_Y) << (u8)r_SRSs::Z) | ((r_Y >> 7) << (u8)r_SRSs::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_Y);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_Y >> (u8)r_SRSs::N);
 }
 void sfot::O_STA(u16& _addr, sfotmem& _mem)
 {
@@ -109,35 +120,40 @@ void sfot::O_TAX(u16& _addr, sfotmem& _mem)
 	// Transfer accumulator to X register
 	r_X = r_A;
 	// Set appropriate status flags
-	r_SR = ((!r_X) << (u8)r_SRSs::Z) | (r_X & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_X);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_X >> (u8)r_SRSs::N);
 }
 void sfot::O_TAY(u16& _addr, sfotmem& _mem)
 {
 	// Transfer accumulator to Y register
 	r_Y = r_A;
 	// Set appropriate status flags
-	r_SR = ((!r_Y) << (u8)r_SRSs::Z) | (r_Y & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_Y);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_Y >> (u8)r_SRSs::N);
 }
 void sfot::O_TXA(u16& _addr, sfotmem& _mem)
 {
 	// Transfer X register to accumulator
 	r_A = r_X;
 	// Set appropriate status flags
-	r_SR = ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_A);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_TYA(u16& _addr, sfotmem& _mem)
 {
 	// Transfer Y register to accumulator
 	r_A = r_Y;
 	// Set appropriate status flags
-	r_SR = ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_A);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_TSX(u16& _addr, sfotmem& _mem)
 {
 	// Transfer stack pointer to X register
 	r_X = r_S;
 	// Set appropriate status flags
-	r_SR = ((!r_X) << (u8)r_SRSs::Z) | (r_X & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_X);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_X >> (u8)r_SRSs::N);
 }
 void sfot::O_TXS(u16& _addr, sfotmem& _mem)
 {
@@ -162,7 +178,8 @@ void sfot::O_PLA(u16& _addr, sfotmem& _mem)
 	u16 addr = 0x0100 | ++r_S;
 	r_A = _mem[addr];
 	// Set appropriate status flags
-	r_SR = ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_A);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_PLP(u16& _addr, sfotmem& _mem)
 {
@@ -175,28 +192,33 @@ void sfot::O_AND(u16& _addr, sfotmem& _mem)
 	// Logical AND on accumulator and memory
 	r_A &= _mem[_addr];
 	// Set appropriate status flags
-	r_SR = ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_A);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_EOR(u16& _addr, sfotmem& _mem)
 {
 	// Exclusive OR on accumulator and memory
 	r_A ^= _mem[_addr];
 	// Set appropriate status flags
-	r_SR = ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_A);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_ORA(u16& _addr, sfotmem& _mem)
 {
 	// Inclusive OR on accumulator and memory
 	r_A |= _mem[_addr];
 	// Set appropriate status flags
-	r_SR = ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_A);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_BIT(u16& _addr, sfotmem& _mem)
 {
 	// Bit test on accumulator and memory
 	u8 test = r_A & _mem[_addr];
 	// Set appropriate status flags
-	r_SR = ((!test) << (u8)r_SRSs::Z) | (test & (u8)r_SRS::O) | (test & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !test);
+	BIT_SET(r_SR, (u8)r_SRSs::O, !!(test & (u8)r_SRS::O));
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_ADC(u16& _addr, sfotmem& _mem)
 {
@@ -211,9 +233,12 @@ void sfot::O_ADC(u16& _addr, sfotmem& _mem)
 	}
 	default: // Binary mode
 		// Set appropriate status flags
-		r_SR = ((~(r_A ^ operand) & (r_A ^ adc) & 0x80) >> 1) | (adc > 0xff) | (adc & (u8)r_SRS::N) | ((!adc) << (u8)r_SRSs::Z) | (u8)r_SRS::S;
+		BIT_SET(r_SR, (u8)r_SRSs::O, (~(r_A ^ operand) & (r_A ^ adc) & 0x80) >> 7);
+		BIT_SET(r_SR, (u8)r_SRSs::C, adc > 0xFF);
+		BIT_SET(r_SR, (u8)r_SRSs::N, adc >> (u8)r_SRSs::N);
+		BIT_SET(r_SR, (u8)r_SRSs::Z, !(adc & 0xFF));
 		// Set accumulator to sum
-		r_A = adc & 0xff;
+		r_A = adc & 0xFF;
 		break;
 	}
 }
@@ -230,21 +255,27 @@ void sfot::O_CMP(u16& _addr, sfotmem& _mem)
 	// Compare accumulator with memory
 	u8 operand = _mem[_addr];
 	// Set appropriate status flags
-	r_SR = (r_A >= operand) | ((r_A == operand) << (u8)r_SRSs::Z) | ((u8)(r_A - operand) & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::C, r_A >= operand);
+	BIT_SET(r_SR, (u8)r_SRSs::Z, r_A == operand);
+	BIT_SET(r_SR, (u8)r_SRSs::N, !!((u8)(r_A - operand) & (u8)r_SRS::N));
 }
 void sfot::O_CPX(u16& _addr, sfotmem& _mem)
 {
 	// Compare X register with memory
 	u8 operand = _mem[_addr];
 	// Set appropriate status flags
-	r_SR = (r_X >= operand) | ((r_X == operand) << (u8)r_SRSs::Z) | ((u8)(r_X - operand) & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::C, r_X >= operand);
+	BIT_SET(r_SR, (u8)r_SRSs::Z, r_X == operand);
+	BIT_SET(r_SR, (u8)r_SRSs::N, !!((u8)(r_X - operand) & (u8)r_SRS::N));
 }
 void sfot::O_CPY(u16& _addr, sfotmem& _mem)
 {
 	// Compare Y register with memory
 	u8 operand = _mem[_addr];
 	// Set appropriate status flags
-	r_SR = (r_Y >= operand) | ((r_Y == operand) << (u8)r_SRSs::Z) | ((u8)(r_Y - operand) & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::C, r_Y >= operand);
+	BIT_SET(r_SR, (u8)r_SRSs::Z, r_Y == operand);
+	BIT_SET(r_SR, (u8)r_SRSs::N, !!((u8)(r_Y - operand) & (u8)r_SRS::N));
 }
 void sfot::O_INC(u16& _addr, sfotmem& _mem)
 {
@@ -252,21 +283,24 @@ void sfot::O_INC(u16& _addr, sfotmem& _mem)
 	u8 operand = _mem[_addr]; ++operand;
 	_mem.Set(_addr, operand);
 	// Set appropriate status flags
-	r_SR = ((!operand) << (u8)r_SRSs::Z) | (operand & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !operand);
+	BIT_SET(r_SR, (u8)r_SRSs::N, operand >> (u8)r_SRSs::N);
 }
 void sfot::O_INX(u16& _addr, sfotmem& _mem)
 {
 	// Increment value in X register
 	++r_X;
 	// Set appropriate status flags
-	r_SR = ((!r_X) << (u8)r_SRSs::Z) | (r_X & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_X);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_X >> (u8)r_SRSs::N);
 }
 void sfot::O_INY(u16& _addr, sfotmem& _mem)
 {
 	// Increment value in Y register
 	++r_Y;
 	// Set appropriate status flags
-	r_SR = ((!r_Y) << (u8)r_SRSs::Z) | (r_Y & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_Y);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_Y >> (u8)r_SRSs::N);
 }
 void sfot::O_DEC(u16& _addr, sfotmem& _mem)
 {
@@ -274,57 +308,64 @@ void sfot::O_DEC(u16& _addr, sfotmem& _mem)
 	u8 operand = _mem[_addr]; --operand;
 	_mem.Set(_addr, operand);
 	// Set appropriate status flags
-	r_SR = ((!operand) << (u8)r_SRSs::Z) | (operand & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !operand);
+	BIT_SET(r_SR, (u8)r_SRSs::N, operand >> (u8)r_SRSs::N);
 }
 void sfot::O_DEX(u16& _addr, sfotmem& _mem)
 {
 	// Decrement value in X register
 	--r_X;
 	// Set appropriate status flags
-	r_SR = ((!r_X) << (u8)r_SRSs::Z) | (r_X & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_X);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_X >> (u8)r_SRSs::N);
 }
 void sfot::O_DEY(u16& _addr, sfotmem& _mem)
 {
 	// Decrement value in Y register
 	--r_Y;
 	// Set appropriate status flags
-	r_SR = ((!r_Y) << (u8)r_SRSs::Z) | (r_Y & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_Y);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_Y >> (u8)r_SRSs::N);
 }
 void sfot::O_ASL(u16& _addr, sfotmem& _mem)
 {
 	// Arithmetic shift left (memory)
 	u8 operand = _mem[_addr];
 	// Set carry
-	r_SR = (operand & 0x80) >> 7; operand <<= 1;
+	BIT_SET(r_SR, (u8)r_SRSs::C, (operand & 0x80) >> 7); operand <<= 1;
 	_mem.Set(_addr, operand);
 	// Set appropriate status flags
-	r_SR |= ((!operand) << (u8)r_SRSs::Z) | (operand & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !operand);
+	BIT_SET(r_SR, (u8)r_SRSs::N, operand >> (u8)r_SRSs::N);
 }
 void sfot::O_ASL_A(u16& _addr, sfotmem& _mem)
 {
 	// Arithmetic shift left (accumulator)
 	// Set carry
-	r_SR = (r_A & 0x80) >> 7; r_A <<= 1;
+	BIT_SET(r_SR, (u8)r_SRSs::C, (r_A & 0x80) >> 7); r_A <<= 1;
 	// Set appropriate status flags
-	r_SR |= ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_A);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_LSR(u16& _addr, sfotmem& _mem)
 {
 	// Logical shift right (memory)
 	u8 operand = _mem[_addr];
 	// Set carry
-	r_SR = (operand & 0x01); operand >>= 1;
+	BIT_SET(r_SR, (u8)r_SRSs::C, operand & 0x01); operand >>= 1;
 	_mem.Set(_addr, operand);
 	// Set appropriate status flags
-	r_SR |= ((!operand) << (u8)r_SRSs::Z) | (operand & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !operand);
+	BIT_SET(r_SR, (u8)r_SRSs::N, operand >> (u8)r_SRSs::N);
 }
 void sfot::O_LSR_A(u16& _addr, sfotmem& _mem)
 {
 	// Logical shift right (accumulator)
 	// Set carry
-	r_SR = (r_A & 0x01); r_A >>= 1;
+	BIT_SET(r_SR, (u8)r_SRSs::C, r_A & 0x01); r_A >>= 1;
 	// Set appropriate status flags
-	r_SR |= ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_A);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_ROL(u16& _addr, sfotmem& _mem)
 {
@@ -332,21 +373,23 @@ void sfot::O_ROL(u16& _addr, sfotmem& _mem)
 	u8 operand = _mem[_addr];
 	u8 oldCarry = r_SR & (u8)r_SRS::C;
 	// Set carry
-	r_SR = (operand & 0x80) >> 7; operand <<= 1;
+	BIT_SET(r_SR, (u8)r_SRSs::C, (operand & 0x80) >> 7); operand <<= 1;
 	operand |= oldCarry;
 	_mem.Set(_addr, operand);
 	// Set appropriate status flags
-	r_SR |= ((!operand) << (u8)r_SRSs::Z) | (operand & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !operand);
+	BIT_SET(r_SR, (u8)r_SRSs::N, operand >> (u8)r_SRSs::N);
 }
 void sfot::O_ROL_A(u16& _addr, sfotmem& _mem)
 {
 	// Rotate left (accumulator)
 	u8 oldCarry = r_SR & (u8)r_SRS::C;
 	// Set carry
-	r_SR = (r_A & 0x80) >> 7; r_A <<= 1;
+	BIT_SET(r_SR, (u8)r_SRSs::C, (r_A & 0x80) >> 7); r_A <<= 1;
 	r_A |= oldCarry;
 	// Set appropriate status flags
-	r_SR |= ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_A);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_ROR(u16& _addr, sfotmem& _mem)
 {
@@ -354,21 +397,23 @@ void sfot::O_ROR(u16& _addr, sfotmem& _mem)
 	u8 operand = _mem[_addr];
 	u8 oldCarry = r_SR & (u8)r_SRS::C;
 	// Set carry
-	r_SR = (operand & 0x01); operand >>= 1;
+	BIT_SET(r_SR, (u8)r_SRSs::C, operand & 0x01); operand >>= 1;
 	operand |= oldCarry;
 	_mem.Set(_addr, operand);
 	// Set appropriate status flags
-	r_SR |= ((!operand) << (u8)r_SRSs::Z) | (operand & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !operand);
+	BIT_SET(r_SR, (u8)r_SRSs::N, operand >> (u8)r_SRSs::N);
 }
 void sfot::O_ROR_A(u16& _addr, sfotmem& _mem)
 {
 	// Rotate right (accumulator)
 	u8 oldCarry = r_SR & (u8)r_SRS::C;
 	// Set carry
-	r_SR = (r_A & 0x01); r_A >>= 1;
+	BIT_SET(r_SR, (u8)r_SRSs::C, r_A & 0x01); r_A >>= 1;
 	r_A |= oldCarry;
 	// Set appropriate status flags
-	r_SR |= ((!r_A) << (u8)r_SRSs::Z) | (r_A & (u8)r_SRS::N) | (u8)r_SRS::S;
+	BIT_SET(r_SR, (u8)r_SRSs::Z, !r_A);
+	BIT_SET(r_SR, (u8)r_SRSs::N, r_A >> (u8)r_SRSs::N);
 }
 void sfot::O_JMP(u16& _addr, sfotmem& _mem)
 {
