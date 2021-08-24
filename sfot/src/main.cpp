@@ -4,7 +4,8 @@
 
 #define op (u8)sfotops::
 #define cmem (u16)sfotcmem::
-#define STEPS 100
+
+#define STEPS 1
 
 int main()
 {
@@ -13,18 +14,17 @@ int main()
 
 	// Load some machine code
 	u8* mem = new u8[65536]{
+		op BRK,
 		op LDX_IMM,
-		0x20,
-		op INC_ABS,
-		0x00,
-		0x10,
-		op DEX,
-		op BNE,
-		0xFB,
-		op LDA_ABS,
-		0x00,
-		0x10
+		0x80
 	};
+
+	mem[processor.e_BRK_L] = 0x00;
+	mem[processor.e_BRK_H] = 0x02;
+
+	mem[0x0200] = op ADC_IMM;
+	mem[0x0201] = 0x01;
+	mem[0x0202] = op RTI;
 
 	sfotmem memory(mem, cmem M64K);
 

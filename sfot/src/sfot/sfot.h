@@ -41,6 +41,13 @@ private: // Emulation Variables
 	// Addressing mode instruction jump-table
 	u16 (sfot::* e_AMJT[10])(sfotmem&);
 
+public: // Configurable cpu vectors
+	// BRK vector (High byte)
+	u16 e_BRK_L{ 0xFFFE };
+	// BRK vector (Low byte)
+	u16 e_BRK_H{ 0xFFFF };
+
+
 private: // Addressing Modes
 	// Absolute address
 	u16 AM_Abs(sfotmem& _mem);
@@ -138,6 +145,8 @@ private: // Opcodes/Instructions
 	void O_SEI(u16& _addr, sfotmem& _mem);
 	
 	// System functions
+	void O_BRK(u16& _addr, sfotmem& _mem);
+	void O_RTI(u16& _addr, sfotmem& _mem);
 
 public: // Getters/Setters
 	// Get status register

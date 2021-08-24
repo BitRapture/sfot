@@ -389,11 +389,10 @@ void sfot::O_RTS(u16& _addr, sfotmem& _mem)
 {
 	// Return from subroutine, get from stack
 	u16 addr = 0x0100 | ++r_S;
-	_addr = _mem[addr]; // little bit cheeky :)
+	r_PC = _mem[addr]; 
 	addr = 0x0100 | ++r_S;
-	_addr |= (_mem[addr]) << 8;
-	r_PC = _addr + 1;
-
+	r_PC |= (_mem[addr]) << 8; ++r_PC;
+	std::cout << r_PC << std::endl;
 }
 void sfot::O_BCC(u16& _addr, sfotmem& _mem)
 {
@@ -469,6 +468,33 @@ void sfot::O_SEI(u16& _addr, sfotmem& _mem)
 {
 	// Set interrupt disable
 	r_SR |= (u8)r_SRS::I;
+}
+void sfot::O_BRK(u16& _addr, sfotmem& _mem)
+{
+	// Break (force an interrupt)
+	// Save PC and SR to stack
+	u16 addr = 0x0100 | r_S; --r_S;
+	_mem.Set(addr, (r_PC >> 8) & 0xFF);
+	addr = 0x0100 | r_S; --r_S;
+	_mem.Set(addr, r_PC & 0xFF);
+	addr = 0x0100 | r_S; --r_S;
+	_mem.Set(addr, r_SR);
+	// Go to location
+	r_PC = _mem[e_BRK_L] + (_mem[e_BRK_H] << 8);
+	// Set appropriate status flags
+	r_SR |= (u8)r_SRS::B;
+}
+void sfot::O_RTI(u16& _addr, sfotmem& _mem)
+{
+	// Return from interrupt
+	// Get SR from stack
+	u16 addr = 0x0100 | ++r_S;
+	r_SR = _mem[addr];
+	// Get PC from stack
+	addr = 0x0100 | ++r_S;
+	r_PC = _mem[addr];
+	addr = 0x0100 | ++r_S;
+	r_PC |= (_mem[addr]) << 8; 
 }
 
 u64 sfot::EmulateCycles(sfotmem& _memory, u64& _cycleAmount)
@@ -1027,7 +1053,16 @@ sfot::sfot()
 
 
 		// System functions
+	// Break (software interrupt)
+	e_OCJT[(u8)sfotops::BRK] = &sfot::O_BRK;
+	e_OCAM[(u8)sfotops::BRK] = (u8)r_AM::NOADDR;
+
 	// No Operation
 	e_OCJT[(u8)sfotops::NOP] = 0;
 	e_OCAM[(u8)sfotops::NOP] = (u8)r_AM::NINST;
+
+	// Return from interrupt
+	e_OCJT[(u8)sfotops::RTI] = &sfot::O_RTI;
+	e_OCAM[(u8)sfotops::RTI] = (u8)r_AM::NOADDR;
+
 }
