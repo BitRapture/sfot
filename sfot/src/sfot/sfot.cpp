@@ -48,8 +48,8 @@ u16 sfot::AM_IndY(sfotmem& _mem)
 u16 sfot::AM_Rel(sfotmem& _mem)
 {
 	// For branches, next byte is a signed offset for r_PC
-	u16 addr = (s8)(_mem[r_PC]); ++r_PC;
-	addr += r_PC;
+	u16 addr = r_PC; 
+	addr += (s8)(_mem[r_PC]); ++r_PC;
 	return addr;
 }
 u16 sfot::AM_Zpg(sfotmem& _mem)
@@ -395,6 +395,47 @@ void sfot::O_RTS(u16& _addr, sfotmem& _mem)
 	r_PC = _addr + 1;
 
 }
+void sfot::O_BCC(u16& _addr, sfotmem& _mem)
+{
+	// Branch if carry is clear
+	r_PC = (!(r_SR & (u8)r_SRS::C) ? _addr : r_PC);
+}
+void sfot::O_BCS(u16& _addr, sfotmem& _mem)
+{
+	// Branch if carry is set
+	r_PC = (!(r_SR & (u8)r_SRS::C) ? r_PC : _addr);
+}
+void sfot::O_BEQ(u16& _addr, sfotmem& _mem)
+{
+	// Branch if equal (zero flag set)
+	r_PC = (!(r_SR & (u8)r_SRS::Z) ? r_PC : _addr);
+}
+void sfot::O_BMI(u16& _addr, sfotmem& _mem)
+{
+	// Branch if minus (negative flag set)
+	r_PC = (!(r_SR & (u8)r_SRS::N) ? r_PC : _addr);
+}
+void sfot::O_BNE(u16& _addr, sfotmem& _mem)
+{
+	// Branch if not equal (zero flag clear)
+	r_PC = (!(r_SR & (u8)r_SRS::Z) ? _addr : r_PC);
+}
+void sfot::O_BPL(u16& _addr, sfotmem& _mem)
+{
+	// Branch if positive (negative flag clear)
+	r_PC = (!(r_SR & (u8)r_SRS::N) ? _addr : r_PC);
+}
+void sfot::O_BVC(u16& _addr, sfotmem& _mem)
+{
+	// Branch if overflow clear
+	r_PC = (!(r_SR & (u8)r_SRS::O) ? _addr : r_PC);
+}
+void sfot::O_BVS(u16& _addr, sfotmem& _mem)
+{
+	// Branch if overflow set
+	r_PC = (!(r_SR & (u8)r_SRS::O) ? r_PC : _addr);
+}
+
 
 u64 sfot::EmulateCycles(sfotmem& _memory, u64& _cycleAmount)
 {
@@ -889,10 +930,42 @@ sfot::sfot()
 	e_OCAM[(u8)sfotops::RTS] = (u8)r_AM::NOADDR;
 
 		// Branches
+	// Branch if carry clear
+	e_OCJT[(u8)sfotops::BCC] = &sfot::O_BCC;
+	e_OCAM[(u8)sfotops::BCC] = (u8)r_AM::REL;
+
+	// Branch if carry set
+	e_OCJT[(u8)sfotops::BCS] = &sfot::O_BCS;
+	e_OCAM[(u8)sfotops::BCS] = (u8)r_AM::REL;
+
+	// Branch if equal
+	e_OCJT[(u8)sfotops::BEQ] = &sfot::O_BEQ;
+	e_OCAM[(u8)sfotops::BEQ] = (u8)r_AM::REL;
+
+	// Branch if minus
+	e_OCJT[(u8)sfotops::BMI] = &sfot::O_BMI;
+	e_OCAM[(u8)sfotops::BMI] = (u8)r_AM::REL;
+
+	// Branch if not equal
+	e_OCJT[(u8)sfotops::BNE] = &sfot::O_BNE;
+	e_OCAM[(u8)sfotops::BNE] = (u8)r_AM::REL;
+
+	// Branch if positive
+	e_OCJT[(u8)sfotops::BPL] = &sfot::O_BPL;
+	e_OCAM[(u8)sfotops::BPL] = (u8)r_AM::REL;
+
+	// Branch if overflow clear
+	e_OCJT[(u8)sfotops::BVC] = &sfot::O_BVC;
+	e_OCAM[(u8)sfotops::BVC] = (u8)r_AM::REL;
+
+	// Branch if overflow set
+	e_OCJT[(u8)sfotops::BVS] = &sfot::O_BVS;
+	e_OCAM[(u8)sfotops::BVS] = (u8)r_AM::REL;
 
 		// Status flag changes
 
 		// System functions
+	// No Operation
 	e_OCJT[(u8)sfotops::NOP] = 0;
 	e_OCAM[(u8)sfotops::NOP] = (u8)r_AM::NINST;
 }

@@ -4,6 +4,7 @@
 
 #define op (u8)sfotops::
 #define cmem (u16)sfotcmem::
+#define STEPS 100
 
 int main()
 {
@@ -12,17 +13,18 @@ int main()
 
 	// Load some machine code
 	u8* mem = new u8[65536]{
-		op JSR_ABS,
-		0x00,
-		0x02,
 		op LDX_IMM,
-		0x20
+		0x20,
+		op INC_ABS,
+		0x00,
+		0x10,
+		op DEX,
+		op BNE,
+		0xFB,
+		op LDA_ABS,
+		0x00,
+		0x10
 	};
-
-	u8* jmp = mem + 0x0200;
-	jmp[0] = op LDA_IMM;
-	jmp[1] = 0x45;
-	jmp[2] = op RTS;
 
 	sfotmem memory(mem, cmem M64K);
 
@@ -34,10 +36,8 @@ int main()
 		* stackPointer = processor.GetStackPointer(),
 		* statusRegister = processor.GetStatusRegister();
 
-	processor.EmulateStep(memory);
-	processor.EmulateStep(memory);
-	processor.EmulateStep(memory);
-	processor.EmulateStep(memory);
+	for (unsigned int i = 0; i < STEPS; ++i)
+		processor.EmulateStep(memory);
 
 	std::cout << "pc: " << *programCounter
 		<< "\n\na-reg: " << (u32)*accumulator

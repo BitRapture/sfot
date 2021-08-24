@@ -119,6 +119,15 @@ private: // Opcodes/Instructions
 	void O_RTS(u16& _addr, sfotmem& _mem);
 
 	// Branches
+	void O_BCC(u16& _addr, sfotmem& _mem);
+	void O_BCS(u16& _addr, sfotmem& _mem);
+	void O_BEQ(u16& _addr, sfotmem& _mem);
+	void O_BMI(u16& _addr, sfotmem& _mem);
+	void O_BNE(u16& _addr, sfotmem& _mem);
+	void O_BPL(u16& _addr, sfotmem& _mem);
+	void O_BVC(u16& _addr, sfotmem& _mem);
+	void O_BVS(u16& _addr, sfotmem& _mem);
+
 	// Status flag changes
 	// System functions
 
